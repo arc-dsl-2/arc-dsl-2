@@ -1,7 +1,29 @@
 # Domain Specific Language for the Abstraction and Reasoning Corpus (ARC-DSL)
 
-The DSL was created with the aim of being expressive enough to allow programs solving arbitrary ARC tasks, and generic, i.e. consisting of only few primitives, each useful for many tasks (see [`dsl.py`](dsl.py)). As a proof of concept, solver programs for the training tasks were written (see [`solvers.py`](solvers.py)). See [`arc_dsl_writeup.pdf`](arc_dsl_writeup.pdf) for a more detailed description of the work.
+This is a fork of https://github.com/michaelhodel/arc-dsl The main reason this fork was created is because the original maintainer stopped accepting pull requests and some things rotted a bit. The initial fork mostly simply merges the pull requests that bring the repo back to life. We also took the chance to do some quality of life improvements. There are no major features added yet. ARC-AGI-2 support would be cool one day.
 
+This repo defines a DSL for solving ARC-AGI problems. The main files are:
+
+* [`dsl.py`](dsl.py): defines primitive functions that transform the input in some way to get closer to the output
+* [`solvers.py`](solvers.py): contains hand crafted solutions to the 400 training problems of the ARC-AGI-1 public training set using the DSL
+* [`arc_dsl_writeup.pdf`](arc_dsl_writeup.pdf) contains a more detailed description of the work
+
+This repository has no external dependencies, so to use it you can simply:
+
+```
+git clone --recursive https://github.com/arc-dsl-2/arc-dsl-2
+cd arc-dsl-2
+./main.py
+```
+
+And the expected output is:
+
+```
+400 out of 400 solvers formatted correctly.
+400 out of 400 tasks solved correctly.
+```
+
+Tested on Ubuntu 25.04, Python 3.13.3.
 
 ## Example solver program for task 00d62c1b written in the DSL
 
