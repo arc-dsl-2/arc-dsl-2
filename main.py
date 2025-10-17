@@ -1,7 +1,6 @@
 import os
 import json
 import inspect
-import tqdm
 
 import arc_types
 import constants
@@ -95,6 +94,7 @@ def test_solvers_formatting(solvers_module, dsl_module):
                 ]) > 1 or v == 'O'
             n_correct += 1
         except:
+            print(f'failure: {key}')
             pass
     print(f'{n_correct} out of {n} solvers formatted correctly.')
 
@@ -103,7 +103,7 @@ def test_solvers_correctness(data, solvers_module):
     """ tests the implemented solvers for correctness """
     n_correct = 0
     n = len(data["train"])
-    for key in tqdm.tqdm(data['train'].keys(), total=n):
+    for key in data['train'].keys():
         task = data['train'][key] + data['test'][key]
         try:
             solver = getattr(solvers_module, f'solve_{key}')
@@ -111,6 +111,7 @@ def test_solvers_correctness(data, solvers_module):
                 assert solver(ex['input']) == ex['output']
             n_correct += 1
         except:
+            print(f'failure: {key}')
             pass
     print(f'{n_correct} out of {n} tasks solved correctly.')
 
