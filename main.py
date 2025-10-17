@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import argparse
+import datetime
 import os
 import os.path
 import json
@@ -99,11 +101,12 @@ def test_solvers_formatting(solvers_module, dsl_module):
     print(f'{n_correct} out of {n} solvers formatted correctly.')
 
 
-def test_solvers_correctness(data, solvers_module):
+def test_solvers_correctness(data, solvers_module, benchmark: bool):
     """ tests the implemented solvers for correctness """
     n_correct = 0
     n = len(data["train"])
     for key in data['train'].keys():
+        start_time = datetime.datetime.now()
         task = data['train'][key] + data['test'][key]
         try:
             solver = getattr(solvers_module, f'solve_{key}')
@@ -111,17 +114,21 @@ def test_solvers_correctness(data, solvers_module):
                 assert solver(ex['input']) == ex['output']
             n_correct += 1
         except:
-            print(f'failure: {key}')
+            print(f'failure: {key}', flush=True)
             pass
+        if benchmark:
+            print(f'{key} {(datetime.datetime.now() - start_time)/ datetime.timedelta(milliseconds=1)}', flush=True)
     print(f'{n_correct} out of {n} tasks solved correctly.')
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-b', '--benchmark', default=False, action='store_true', help='Print timing information for each run')
+    args = parser.parse_args()
     data = get_data(train=True)
     run_dsl_tests(dsl, tests)
     test_solvers_formatting(solvers, dsl)
-    test_solvers_correctness(data, solvers)
-
+    test_solvers_correctness(data, solvers, args.benchmark)
 
 if __name__ == '__main__':
     main()
