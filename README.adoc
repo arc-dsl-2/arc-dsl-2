@@ -37,13 +37,51 @@ Tested on Ubuntu 25.04, Python 3.13.3.
 
 toc::[]
 
+== plot.py
+
+link:plot.py[] is a helper script to plot JSON task files adapted from https://www.kaggle.com/code/allegich/arc-agi-2025-visualization-all-1000-120-tasks
+
+To use it first install dependencies with:
+
+[source,bash]
+----
+virtualenv -p python3 .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+----
+
+Then you can view inputs and outputs of a task on a popup window with:
+
+[source,bash]
+----
+./plot.py ARC-AGI/data/training/007bbfb7.json
+----
+
+or specifying the path by ID with:
+
+[source,bash]
+----
+./plot.py -i 007bbfb7
+----
+
+and you can save to PNG instead of opening the popup window with:
+
+[source,bash]
+----
+./plot.py -s ARC-AGI/data/training/007bbfb7.json
+xdg-open ARC-AGI/data/training/007bbfb7.png
+----
+
+image::media/007bbfb7.png[]
+
 == Sample solver
 
 === 00d62c1b
 
-image::00d62c1b.png[Task 00d62c1b]
+image::media/00d62c1b.png[Task 00d62c1b]
 
-....
+[source,python]
+----
 def solve_00d62c1b(I):
     objs = objects(grid=I, univalued=T, diagonal=F, without_bg=F)
     black_objs = colorfilter(objs=objs, value=ZERO)
@@ -52,7 +90,7 @@ def solve_00d62c1b(I):
     enclosed = mfilter(container=black_objs, function=does_not_border)
     O = fill(grid=I, value=FOUR, patch=enclosed)
     return O
-....
+----
 
 The function `solve_00d62c1b` takes an input grid `I` and returns the correct output grid `O`. An explanation of what the variables store and how their values were computed:
 
@@ -65,9 +103,10 @@ The function `solve_00d62c1b` takes an input grid `I` and returns the correct ou
 
 === 5521c0d9
 
-image::5521c0d9.png[Task 5521c0d9]
+image::media/5521c0d9.png[Task 5521c0d9]
 
-....
+[source,python]
+----
 def solve_5521c0d9(I):
     objs = objects(grid=I, univalued=T, diagonal=F, without_bgT)
     foreground = merge(containers=objs)
@@ -77,7 +116,7 @@ def solve_5521c0d9(I):
     shifted = mapply(function=shifter, container=objs)
     O = paint(grid=empty_grid, obj=shifted)
     return O
-....
+----
 
 * `objs`: the set of objects extracted from the input grid `I` that are single-color only, ignoring the background color; the result of calling the `objects` primitive on `I` with `univalued=True`, `diagonal=False` and `without_background=True`
 * `foreground`: all the objects treated as a single object, the result of calling the `merge` primitive on the objects `objs`

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import os.path
 import json
 import inspect
 
@@ -8,14 +9,13 @@ import dsl
 import tests
 import solvers
 
-
-
 def get_data(train=True):
     path = f'ARC-AGI/data/{"training" if train else "evaluation"}'
     data = {}
     for fn in os.listdir(path):
-        with open(f'{path}/{fn}') as f:
-            data[fn.rstrip('.json')] = json.load(f)
+        if os.path.splitext(fn)[1] == '.json':
+            with open(f'{path}/{fn}') as f:
+                data[fn.rstrip('.json')] = json.load(f)
     ast = lambda g: tuple(tuple(r) for r in g)
     return {
         'train': {k: [{
