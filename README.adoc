@@ -108,7 +108,7 @@ image::media/5521c0d9.png[Task 5521c0d9]
 [source,python]
 ----
 def solve_5521c0d9(I):
-    objs = objects(grid=I, univalued=T, diagonal=F, without_bgT)
+    objs = objects(grid=I, univalued=T, diagonal=F, without_bg=T)
     foreground = merge(containers=objs)
     empty_grid = cover(grid=I, patch=foreground)
     offset_getter = chain(h=toivec, g=invert, f=height)
