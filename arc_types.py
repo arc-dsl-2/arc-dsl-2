@@ -1,9 +1,9 @@
+from __future__ import annotations
 from typing import (
     List,
     Union,
     Tuple,
     Any,
-    Container,
     Callable,
     FrozenSet,
     Iterable
@@ -14,7 +14,7 @@ Integer = int
 IntegerTuple = Tuple[Integer, Integer]
 Numerical = Union[Integer, IntegerTuple]
 IntegerSet = FrozenSet[Integer]
-Grid = Tuple[Tuple[Integer]]
+Grid = Tuple[Tuple[Integer], ...]
 Cell = Tuple[Integer, IntegerTuple]
 Object = FrozenSet[Cell]
 Objects = FrozenSet[Object]
@@ -23,5 +23,7 @@ IndicesSet = FrozenSet[Indices]
 Patch = Union[Object, Indices]
 Element = Union[Object, Grid]
 Piece = Union[Grid, Patch]
-TupleTuple = Tuple[Tuple]
-ContainerContainer = Container[Container]
+TupleTuple = Tuple[Tuple[Any, ...], ...]
+ContainerContainer = Union[Tuple[Tuple[Any, ...], ...], FrozenSet[FrozenSet[Any]]]
+# Generic container type for functions that accept various container types
+Container = Union[Tuple[Any, ...], FrozenSet[Any], Iterable[Any]]

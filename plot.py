@@ -56,7 +56,8 @@ def plot_task(
     if save:
         plt.savefig(path.splitext(json_path)[0] + '.png')
     else:
-        fig.canvas.manager.set_window_title(Path(json_path).stem)
+        if fig.canvas.manager is not None:  # type: ignore[union-attr]
+            fig.canvas.manager.set_window_title(Path(json_path).stem)
         plt.show()  
     plt.close()
    
