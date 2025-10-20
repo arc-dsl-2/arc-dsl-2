@@ -1,4 +1,6 @@
+from __future__ import annotations
 from arc_types import *
+from typing import Any as AnyType, Sized, Iterable as IterableType
 
 
 def identity(
@@ -19,6 +21,8 @@ def add(
         return (a[0] + b[0], a[1] + b[1])
     elif isinstance(a, int) and isinstance(b, tuple):
         return (a + b[0], a + b[1])
+    # a is tuple, b is int
+    assert isinstance(a, tuple) and isinstance(b, int)
     return (a[0] + b, a[1] + b)
 
 
@@ -33,6 +37,8 @@ def subtract(
         return (a[0] - b[0], a[1] - b[1])
     elif isinstance(a, int) and isinstance(b, tuple):
         return (a - b[0], a - b[1])
+    # a is tuple, b is int
+    assert isinstance(a, tuple) and isinstance(b, int)
     return (a[0] - b, a[1] - b)
 
 
@@ -47,6 +53,8 @@ def multiply(
         return (a[0] * b[0], a[1] * b[1])
     elif isinstance(a, int) and isinstance(b, tuple):
         return (a * b[0], a * b[1])
+    # a is tuple, b is int
+    assert isinstance(a, tuple) and isinstance(b, int)
     return (a[0] * b, a[1] * b)
     
 
@@ -61,6 +69,8 @@ def divide(
         return (a[0] // b[0], a[1] // b[1])
     elif isinstance(a, int) and isinstance(b, tuple):
         return (a // b[0], a // b[1])
+    # a is tuple, b is int
+    assert isinstance(a, tuple) and isinstance(b, int)
     return (a[0] // b, a[1] // b)
 
 
@@ -120,7 +130,7 @@ def combine(
     b: Container
 ) -> Container:
     """ union """
-    return type(a)((*a, *b))
+    return type(a)((*a, *b))  # type: ignore[call-arg, misc]
 
 
 def intersection(
@@ -174,7 +184,7 @@ def size(
     container: Container
 ) -> Integer:
     """ cardinality """
-    return len(container)
+    return len(container)  # type: ignore[arg-type]
 
 
 def merge(
@@ -234,14 +244,14 @@ def mostcommon(
     container: Container
 ) -> Any:
     """ most common item """
-    return max(set(container), key=container.count)
+    return max(set(container), key=container.count)  # type: ignore[union-attr]
 
 
 def leastcommon(
     container: Container
 ) -> Any:
     """ least common item """
-    return min(set(container), key=container.count)
+    return min(set(container), key=container.count)  # type: ignore[union-attr]
 
 
 def initset(
@@ -331,7 +341,7 @@ def sfilter(
     condition: Callable
 ) -> Container:
     """ keep elements in container that satisfy condition """
-    return type(container)(e for e in container if condition(e))
+    return type(container)(e for e in container if condition(e))  # type: ignore[call-arg]
 
 
 def mfilter(
@@ -339,7 +349,7 @@ def mfilter(
     function: Callable
 ) -> FrozenSet:
     """ filter and merge """
-    return merge(sfilter(container, function))
+    return merge(sfilter(container, function))  # type: ignore[arg-type, return-value]
 
 
 def extract(
@@ -384,7 +394,7 @@ def remove(
     container: Container
 ) -> Container:
     """ remove item from container """
-    return type(container)(e for e in container if e != value)
+    return type(container)(e for e in container if e != value)  # type: ignore[call-arg]
 
 
 def other(
@@ -514,7 +524,7 @@ def apply(
     container: Container
 ) -> Container:
     """ apply function to each item in container """
-    return type(container)(function(e) for e in container)
+    return type(container)(function(e) for e in container)  # type: ignore[call-arg]
 
 
 def rapply(
@@ -522,7 +532,7 @@ def rapply(
     value: Any
 ) -> Container:
     """ apply each function in container to value """
-    return type(functions)(function(value) for function in functions)
+    return type(functions)(function(value) for function in functions)  # type: ignore[call-arg]
 
 
 def mapply(
@@ -530,7 +540,7 @@ def mapply(
     container: ContainerContainer
 ) -> FrozenSet:
     """ apply and merge """
-    return merge(apply(function, container))
+    return merge(apply(function, container))  # type: ignore[arg-type, return-value]
 
 
 def papply(
@@ -548,7 +558,7 @@ def mpapply(
     b: Tuple
 ) -> Tuple:
     """ apply function on two vectors and merge """
-    return merge(papply(function, a, b))
+    return merge(papply(function, a, b))  # type: ignore[return-value]
 
 
 def prapply(
@@ -687,7 +697,7 @@ def crop(
     dims: IntegerTuple
 ) -> Grid:
     """ subgrid specified by start and dimension """
-    return tuple(r[start[1]:start[1]+dims[1]] for r in grid[start[0]:start[0]+dims[0]])
+    return tuple(r[start[1]:start[1]+dims[1]] for r in grid[start[0]:start[0]+dims[0]])  # type: ignore[misc]
 
 
 def toindices(
@@ -697,8 +707,8 @@ def toindices(
     if len(patch) == 0:
         return frozenset()
     if isinstance(next(iter(patch))[1], tuple):
-        return frozenset(index for value, index in patch)
-    return patch
+        return frozenset(index for value, index in patch)  # type: ignore[misc]
+    return patch  # type: ignore[return-value]
 
 
 def recolor(
@@ -718,8 +728,8 @@ def shift(
         return patch
     di, dj = directions
     if isinstance(next(iter(patch))[1], tuple):
-        return frozenset((value, (i + di, j + dj)) for value, (i, j) in patch)
-    return frozenset((i + di, j + dj) for i, j in patch)
+        return frozenset((value, (i + di, j + dj)) for value, (i, j) in patch)  # type: ignore[misc]
+    return frozenset((i + di, j + dj) for i, j in patch)  # type: ignore[misc, operator]
 
 
 def normalize(
@@ -911,13 +921,13 @@ def palette(
 ) -> IntegerSet:
     """ colors occurring in object or grid """
     if isinstance(element, tuple):
-        return frozenset({v for r in element for v in r})
+        return frozenset({v for r in element for v in r})  # type: ignore[return-value]
     return frozenset({v for v, _ in element})
 
 
 def numcolors(
     element: Element
-) -> IntegerSet:
+) -> Integer:
     """ number of colors occurring in object or grid """
     return len(palette(element))
 
@@ -949,21 +959,21 @@ def rot90(
     grid: Grid
 ) -> Grid:
     """ quarter clockwise rotation """
-    return tuple(row for row in zip(*grid[::-1]))
+    return tuple(row for row in zip(*grid[::-1]))  # type: ignore[misc]
 
 
 def rot180(
     grid: Grid
 ) -> Grid:
     """ half rotation """
-    return tuple(tuple(row[::-1]) for row in grid[::-1])
+    return tuple(tuple(row[::-1]) for row in grid[::-1])  # type: ignore[misc]
 
 
 def rot270(
     grid: Grid
 ) -> Grid:
     """ quarter anticlockwise rotation """
-    return tuple(tuple(row[::-1]) for row in zip(*grid[::-1]))[::-1]
+    return tuple(tuple(row[::-1]) for row in zip(*grid[::-1]))[::-1]  # type: ignore[misc]
 
 
 def hmirror(
@@ -974,8 +984,8 @@ def hmirror(
         return piece[::-1]
     d = ulcorner(piece)[0] + lrcorner(piece)[0]
     if isinstance(next(iter(piece))[1], tuple):
-        return frozenset((v, (d - i, j)) for v, (i, j) in piece)
-    return frozenset((d - i, j) for i, j in piece)
+        return frozenset((v, (d - i, j)) for v, (i, j) in piece)  # type: ignore[misc]
+    return frozenset((d - i, j) for i, j in piece)  # type: ignore[misc, return-value]
 
 
 def vmirror(
@@ -986,8 +996,8 @@ def vmirror(
         return tuple(row[::-1] for row in piece)
     d = ulcorner(piece)[1] + lrcorner(piece)[1]
     if isinstance(next(iter(piece))[1], tuple):
-        return frozenset((v, (i, d - j)) for v, (i, j) in piece)
-    return frozenset((i, d - j) for i, j in piece)
+        return frozenset((v, (i, d - j)) for v, (i, j) in piece)  # type: ignore[misc]
+    return frozenset((i, d - j) for i, j in piece)  # type: ignore[misc, operator]
 
 
 def dmirror(
@@ -995,11 +1005,11 @@ def dmirror(
 ) -> Piece:
     """ mirroring along diagonal """
     if isinstance(piece, tuple):
-        return tuple(zip(*piece))
+        return tuple(zip(*piece))  # type: ignore[return-value]
     a, b = ulcorner(piece)
     if isinstance(next(iter(piece))[1], tuple):
-        return frozenset((v, (j - b + a, i - a + b)) for v, (i, j) in piece)
-    return frozenset((j - b + a, i - a + b) for i, j in piece)
+        return frozenset((v, (j - b + a, i - a + b)) for v, (i, j) in piece)  # type: ignore[misc]
+    return frozenset((j - b + a, i - a + b) for i, j in piece)  # type: ignore[misc, operator]
 
 
 def cmirror(
@@ -1022,7 +1032,7 @@ def fill(
     for i, j in toindices(patch):
         if 0 <= i < h and 0 <= j < w:
             grid_filled[i][j] = value
-    return tuple(tuple(row) for row in grid_filled)
+    return tuple(tuple(row) for row in grid_filled)  # type: ignore[misc]
 
 
 def paint(
@@ -1035,7 +1045,7 @@ def paint(
     for value, (i, j) in obj:
         if 0 <= i < h and 0 <= j < w:
             grid_painted[i][j] = value
-    return tuple(tuple(row) for row in grid_painted)
+    return tuple(tuple(row) for row in grid_painted)  # type: ignore[misc]
 
 
 def underfill(
@@ -1051,7 +1061,7 @@ def underfill(
         if 0 <= i < h and 0 <= j < w:
             if g[i][j] == bg:
                 g[i][j] = value
-    return tuple(tuple(r) for r in g)
+    return tuple(tuple(r) for r in g)  # type: ignore[misc]
 
 
 def underpaint(
@@ -1066,7 +1076,7 @@ def underpaint(
         if 0 <= i < h and 0 <= j < w:
             if g[i][j] == bg:
                 g[i][j] = value
-    return tuple(tuple(r) for r in g)
+    return tuple(tuple(r) for r in g)  # type: ignore[misc]
 
 
 def hupscale(
@@ -1074,13 +1084,13 @@ def hupscale(
     factor: Integer
 ) -> Grid:
     """ upscale grid horizontally """
-    g = tuple()
+    g: Tuple[Tuple[Integer, ...], ...] = tuple()
     for row in grid:
-        r = tuple()
+        r: Tuple[Integer, ...] = tuple()
         for value in row:
             r = r + tuple(value for num in range(factor))
         g = g + (r,)
-    return g
+    return g  # type: ignore[return-value]
 
 
 def vupscale(
@@ -1088,10 +1098,10 @@ def vupscale(
     factor: Integer
 ) -> Grid:
     """ upscale grid vertically """
-    g = tuple()
+    g: Tuple[Tuple[Integer, ...], ...] = tuple()
     for row in grid:
         g = g + tuple(row for num in range(factor))
-    return g
+    return g  # type: ignore[return-value]
 
 
 def upscale(
@@ -1100,25 +1110,25 @@ def upscale(
 ) -> Element:
     """ upscale object or grid """
     if isinstance(element, tuple):
-        g = tuple()
+        g: Tuple[Tuple[Integer, ...], ...] = tuple()
         for row in element:
-            upscaled_row = tuple()
+            upscaled_row: Tuple[Integer, ...] = tuple()
             for value in row:
                 upscaled_row = upscaled_row + tuple(value for num in range(factor))
             g = g + tuple(upscaled_row for num in range(factor))
-        return g
+        return g  # type: ignore[return-value]
     else:
         if len(element) == 0:
             return frozenset()
         di_inv, dj_inv = ulcorner(element)
         di, dj = (-di_inv, -dj_inv)
         normed_obj = shift(element, (di, dj))
-        o = set()
-        for value, (i, j) in normed_obj:
+        o: set[Cell] = set()
+        for value, (i, j) in normed_obj:  # type: ignore[misc]
             for io in range(factor):
                 for jo in range(factor):
                     o.add((value, (i * factor + io, j * factor + jo)))
-        return shift(frozenset(o), (di_inv, dj_inv))
+        return shift(frozenset(o), (di_inv, dj_inv))  # type: ignore[return-value]
 
 
 def downscale(
@@ -1127,19 +1137,19 @@ def downscale(
 ) -> Grid:
     """ downscale grid """
     h, w = len(grid), len(grid[0])
-    g = tuple()
+    g: Tuple[Tuple[Integer, ...], ...] = tuple()
     for i in range(h):
-        r = tuple()
+        r: Tuple[Integer, ...] = tuple()
         for j in range(w):
             if j % factor == 0:
                 r = r + (grid[i][j],)
         g = g + (r, )
     h = len(g)
-    dsg = tuple()
+    dsg: Tuple[Tuple[Integer, ...], ...] = tuple()
     for i in range(h):
         if i % factor == 0:
             dsg = dsg + (g[i],)
-    return dsg
+    return dsg  # type: ignore[return-value]
 
 
 def hconcat(
@@ -1147,7 +1157,7 @@ def hconcat(
     b: Grid
 ) -> Grid:
     """ concatenate two grids horizontally """
-    return tuple(i + j for i, j in zip(a, b))
+    return tuple(i + j for i, j in zip(a, b))  # type: ignore[misc]
 
 
 def vconcat(
@@ -1193,15 +1203,15 @@ def cellwise(
 ) -> Grid:
     """ cellwise match of two grids """
     h, w = len(a), len(a[0])
-    resulting_grid = tuple()
+    resulting_grid: Tuple[Tuple[Integer, ...], ...] = tuple()
     for i in range(h):
-        row = tuple()
+        row: Tuple[Integer, ...] = tuple()
         for j in range(w):
             a_value = a[i][j]
             value = a_value if a_value == b[i][j] else fallback
             row = row + (value,)
         resulting_grid = resulting_grid + (row, )
-    return resulting_grid
+    return resulting_grid  # type: ignore[return-value]
 
 
 def replace(
@@ -1210,7 +1220,7 @@ def replace(
     replacer: Integer
 ) -> Grid:
     """ color substitution """
-    return tuple(tuple(replacer if v == replacee else v for v in r) for r in grid)
+    return tuple(tuple(replacer if v == replacee else v for v in r) for r in grid)  # type: ignore[misc]
 
 
 def switch(
@@ -1219,7 +1229,7 @@ def switch(
     b: Integer
 ) -> Grid:
     """ color switching """
-    return tuple(tuple(v if (v != a and v != b) else {a: b, b: a}[v] for v in r) for r in grid)
+    return tuple(tuple(v if (v != a and v != b) else {a: b, b: a}[v] for v in r) for r in grid)  # type: ignore[misc]
 
 
 def center(
@@ -1242,7 +1252,7 @@ def position(
         return (1 if ia < ib else -1, 0)
     elif ia < ib:
         return (1, 1 if ja < jb else -1)
-    elif ia > ib:
+    else:  # ia > ib
         return (-1, 1 if ja < jb else -1)
 
 
@@ -1254,7 +1264,7 @@ def index(
     i, j = loc
     h, w = len(grid), len(grid[0])
     if not (0 <= i < h and 0 <= j < w):
-        return None
+        return None  # type: ignore[return-value]
     return grid[loc[0]][loc[1]] 
 
 
@@ -1263,7 +1273,7 @@ def canvas(
     dimensions: IntegerTuple
 ) -> Grid:
     """ grid construction """
-    return tuple(tuple(value for j in range(dimensions[1])) for i in range(dimensions[0]))
+    return tuple(tuple(value for j in range(dimensions[1])) for i in range(dimensions[0]))  # type: ignore[misc]
 
 
 def corners(
@@ -1307,7 +1317,7 @@ def trim(
     grid: Grid
 ) -> Grid:
     """ trim border of grid """
-    return tuple(r[1:-1] for r in grid[1:-1])
+    return tuple(r[1:-1] for r in grid[1:-1])  # type: ignore[misc]
 
 
 def move(
@@ -1316,7 +1326,7 @@ def move(
     offset: IntegerTuple
 ) -> Grid:
     """ move object on grid """
-    return paint(cover(grid, obj), shift(obj, offset))
+    return paint(cover(grid, obj), shift(obj, offset))  # type: ignore[arg-type]
 
 
 def tophalf(
@@ -1435,7 +1445,7 @@ def box(
 ) -> Indices:
     """ outline of patch """
     if len(patch) == 0:
-        return patch
+        return patch  # type: ignore[return-value]
     ai, aj = ulcorner(patch)
     bi, bj = lrcorner(patch)
     si, sj = min(ai, bi), min(aj, bj)
@@ -1466,7 +1476,7 @@ def occurrences(
     for i in range(h2):
         for j in range(w2):
             occurs = True
-            for v, (a, b) in shift(normed, (i, j)):
+            for v, (a, b) in shift(normed, (i, j)):  # type: ignore[misc]
                 if not (0 <= a < h and 0 <= b < w and grid[a][b] == v):
                     occurs = False
                     break
@@ -1493,7 +1503,7 @@ def compress(
     """ removes frontiers from grid """
     ri = tuple(i for i, r in enumerate(grid) if len(set(r)) == 1)
     ci = tuple(j for j, c in enumerate(dmirror(grid)) if len(set(c)) == 1)
-    return tuple(tuple(v for j, v in enumerate(r) if j not in ci) for i, r in enumerate(grid) if i not in ri)
+    return tuple(tuple(v for j, v in enumerate(r) if j not in ci) for i, r in enumerate(grid) if i not in ri)  # type: ignore[misc]
 
 
 def hperiod(
@@ -1504,7 +1514,7 @@ def hperiod(
     w = width(normalized)
     for p in range(1, w):
         offsetted = shift(normalized, (0, -p))
-        pruned = frozenset({(c, (i, j)) for c, (i, j) in offsetted if j >= 0})
+        pruned = frozenset({(c, (i, j)) for c, (i, j) in offsetted if j >= 0})  # type: ignore[misc]
         if pruned.issubset(normalized):
             return p
     return w
@@ -1518,7 +1528,7 @@ def vperiod(
     h = height(normalized)
     for p in range(1, h):
         offsetted = shift(normalized, (-p, 0))
-        pruned = frozenset({(c, (i, j)) for c, (i, j) in offsetted if i >= 0})
+        pruned = frozenset({(c, (i, j)) for c, (i, j) in offsetted if i >= 0})  # type: ignore[misc]
         if pruned.issubset(normalized):
             return p
     return h
