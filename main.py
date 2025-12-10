@@ -6,6 +6,8 @@ import os
 import os.path
 import json
 import inspect
+import importlib
+import pkgutil
 
 import dsl
 import tests
@@ -33,13 +35,24 @@ def get_data(train=True):
 
 def get_functions(path):
     """ returns a list of available functions """
-    with open(path, 'r') as f:
-        code = f.read()
+    paths = []
+    root = os.path.dirname(path) if os.path.basename(path) == '__init__.py' else path
+    if os.path.isdir(root):
+        for entry in os.listdir(root):
+            if not entry.endswith('.py'):
+                continue
+            paths.append(os.path.join(root, entry))
+    else:
+        paths.append(root)
+
     functions = []
-    for row in code.split('\n'):
-        if row.startswith('def '):
-            function = row.split('def ')[1].split('(')[0]
-            functions.append(function)
+    for file_path in paths:
+        with open(file_path, 'r') as f:
+            code = f.read()
+        for row in code.split('\n'):
+            if row.startswith('def '):
+                function = row.split('def ')[1].split('(')[0]
+                functions.append(function)
     return functions
 
 
@@ -57,17 +70,19 @@ def test_solvers_formatting(solvers_module, dsl_module):
     """ tests the implementd solvers for formatting """
     with open('constants.py', 'r') as f:
         constants = [c.split(' = ')[0] for c in f.readlines() if ' = ' in c]
-    definitions = {
-        function: inspect.getsource(getattr(solvers_module, function)) \
-            for function in get_functions(solvers_module.__file__)
-    }
+    definitions = {}
+    for module_info in pkgutil.iter_modules(solvers_module.__path__):
+        if module_info.name.startswith("_"):
+            continue
+        module = importlib.import_module(f"{solvers_module.__name__}.{module_info.name}")
+        definitions[module_info.name] = inspect.getsource(module.solve)
     dsl_interface = get_functions(dsl_module.__file__)
     n_correct = 0
     n = len(definitions)
     for key, definition in definitions.items():
         try:
             lines = definition.split('\n')
-            assert lines[0] == f'def {key}(I):'
+            assert lines[0] == 'def solve(I):'
             assert lines[-1] == ''
             variables = set()
             calls = set()
@@ -109,7 +124,8 @@ def test_solvers_correctness(data, solvers_module, benchmark: bool):
         start_time = datetime.datetime.now()
         task = data['train'][key] + data['test'][key]
         try:
-            solver = getattr(solvers_module, f'solve_{key}')
+            module = importlib.import_module(f"{solvers_module.__name__}.{key}")
+            solver = module.solve
             for ex in task:
                 assert solver(ex['input']) == ex['output']
             n_correct += 1
