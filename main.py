@@ -66,13 +66,15 @@ def run_dsl_tests(dsl_module, test_module):
         getattr(test_module, fun)()
 
 
-def test_solvers_formatting(solvers_module, dsl_module):
+def test_solvers_formatting(solvers_module, dsl_module, tasks=None):
     """ tests the implementd solvers for formatting """
     with open('constants.py', 'r') as f:
         constants = [c.split(' = ')[0] for c in f.readlines() if ' = ' in c]
     definitions = {}
     for module_info in pkgutil.iter_modules(solvers_module.__path__):
         if module_info.name.startswith("_"):
+            continue
+        if tasks is not None and module_info.name not in tasks:
             continue
         module = importlib.import_module(f"{solvers_module.__name__}.{module_info.name}")
         definitions[module_info.name] = inspect.getsource(module.solve)
@@ -116,11 +118,12 @@ def test_solvers_formatting(solvers_module, dsl_module):
     print(f'{n_correct} out of {n} solvers formatted correctly.')
 
 
-def test_solvers_correctness(data, solvers_module, benchmark: bool):
+def test_solvers_correctness(data, solvers_module, benchmark: bool, tasks=None):
     """ tests the implemented solvers for correctness """
     n_correct = 0
-    n = len(data["train"])
-    for key in data['train'].keys():
+    task_ids = list(data['train'].keys()) if tasks is None else tasks
+    n = len(task_ids)
+    for key in task_ids:
         start_time = datetime.datetime.now()
         task = data['train'][key] + data['test'][key]
         try:
@@ -140,11 +143,18 @@ def test_solvers_correctness(data, solvers_module, benchmark: bool):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-b', '--benchmark', default=False, action='store_true', help='Print timing information for each run')
+    parser.add_argument('tasks', nargs='*', help='Optional list of task ids to test (e.g. 67a3c6ac)')
     args = parser.parse_args()
     data = get_data(train=True)
     run_dsl_tests(dsl, tests)
-    test_solvers_formatting(solvers, dsl)
-    test_solvers_correctness(data, solvers, args.benchmark)
+    selected_tasks = None
+    if args.tasks:
+        missing = [t for t in args.tasks if t not in data['train']]
+        if missing:
+            raise ValueError(f'Unknown task ids: {missing}')
+        selected_tasks = args.tasks
+    test_solvers_formatting(solvers, dsl, tasks=selected_tasks)
+    test_solvers_correctness(data, solvers, args.benchmark, tasks=selected_tasks)
 
 if __name__ == '__main__':
     main()
